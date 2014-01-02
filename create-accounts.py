@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 import random
 import string
 import requests
+from lib.utils import namegen
 
 def main():
     """
@@ -48,15 +49,14 @@ def main():
         print 'Nouns file "' + args.nouns + '" does not exist!'
         return
 
+    ng = namegen.Namegen(adjectives, nouns)
+
     accts = []
     for x in xrange(args.amount):
         acct = {}
 
-        invalid = True
-        while invalid:
-            acct['user'] = random.choice(adjectives).title() + random.choice(nouns).title()
-            invalid = len(acct['user']) > 20
-        
+        acct['user'] = ng.generate()
+
         charset = string.ascii_lowercase + string.ascii_uppercase + string.digits
         acct['pass'] = ''.join(random.choice(charset) for i in xrange(10))
 
