@@ -11,7 +11,7 @@ import random
 import string
 import requests
 from lib.utils import namegen
-from lib import dbs
+from lib import dbs, proxies
 import json
 from time import sleep
 import os
@@ -33,20 +33,35 @@ def main():
 
     captchas = dbs.load_captchas()
     ng = namegen.Namegen()
+    pm = proxies.ProxyManager(args.interval)
 
     accts = []
     for c in captchas:
-        res = gen_acct(ng.generate(), c)
+        while True:
+            proxy = pm.next_proxy()
+            res = gen_acct(ng.generate(), c, proxy)
+            acct = res['acct']
 
-        if 'errors' in res:
-            print 'Error: ' + ', '.join(e[0] for e in res['errors'])
-            continue
+            if 'errors' in res:
+                errors = res['errors']
+                print errors
+                if 'PROXY_ERROR' in errors:
+                    print 'Proxy error on ' + proxy
+                    continue
+                elif 'RATELIMIT' in errors:
+                    print 'Proxy already used on ' + proxy
+                    continue
+                elif 'BAD_CAPTCHA' in errors:
+                    break
+                else:
+                    print 'Error creating acct ' + str(acct) + ': ' + ', '.join(errors)
+                    continue
 
-        acct = res['acct']
-        print 'Account created: ' + str(acct)
-        accts.append(acct)
+            print 'Account created: ' + str(acct)
+            accts.append(acct)
+            break
 
-        if len(accts) > args.amount:
+        if len(accts) == args.amount:
             break
 
     output = args.output
@@ -59,8 +74,8 @@ def main():
         json.dump(accts, outfile, indent=4)
     print 'Done! ' + str(len(accts)) + ' generated accounts saved to file "' + args.output + '".'
 
-def gen_acct(user, captcha):
-    [iden, proxy, sol] = captcha
+def gen_acct(user, captcha, proxy):
+    [iden, sol] = captcha
     acct = {}
 
     acct['user'] = user
@@ -85,16 +100,22 @@ def gen_acct(user, captcha):
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-    proxies = {'http': proxy} if not proxy is 'none' else {}
+    proxies = {'https': proxy} if not proxy is 'none' else {}
 
-    requests.get('http://www.reddit.com/captcha/' + iden + '.png')
+    try:
+        r = requests.post('https://ssl.reddit.com/api/register/' + acct['user'],
+            data=urlencode(payload), headers=headers, proxies=proxies)
+    except requests.exceptions.ProxyError:
+        print 'Error connecting to proxy "' + proxy + '"; skipping.'
+        ret['errors'] = ['PROXY_ERROR']
+        return ret
 
-    r = requests.post('https://ssl.reddit.com/api/register/' + acct['user'],
-        data=urlencode(payload), headers=headers, proxies=proxies)
-
-    rdata = r.json()
-    if 'captcha' in rdata['json']:
-        ret['errors'] = rdata['json']['errors']
+    try:
+        rdata = r.json()
+        if 'captcha' in rdata['json']:
+            ret['errors'] = [ e[0] for e in rdata['json']['errors'] ]
+    except:
+        ret['errors'] = ['PROXY_ERROR']
 
     return ret
 
