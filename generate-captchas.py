@@ -39,17 +39,21 @@ def main():
     else:
         proxies = [None]
 
-    for proxy in proxies:
-        for x in xrange(args.amount):
-            iden = gen_iden(proxy)
-            print 'Generated iden ' + iden[0] + ' with proxy ' + iden[1]
-            idens.append('='.join(iden))
-
     output = args.output
     d = os.path.dirname(output)
     if not os.path.exists(d):
         print 'Directory "' + d + '" not found. Creating.'
         os.makedirs(d)
+
+    if not os.path.exists(d + '/idens/'):
+        print 'Directory "' + d + '" not found. Creating.'
+        os.makedirs(d + '/idens/')
+
+    for proxy in proxies:
+        for x in xrange(args.amount):
+            iden = gen_iden(proxy)
+            print 'Generated iden ' + iden[0] + ' with proxy ' + iden[1]
+            idens.append('='.join(iden))
 
     with open(output, 'w+') as outfile:
         outfile.write('\n'.join(idens))
@@ -57,7 +61,7 @@ def main():
 
     content = ''
     for i in idens:
-        content += '<img src="http://www.reddit.com/captcha/' + i[0] + '.png" />'
+        content += '<img src="http://www.reddit.com/captcha/' + i.split('=')[0] + '.png" />'
 
     html = args.html
     d = os.path.dirname(html)
@@ -86,7 +90,7 @@ def gen_iden(proxy=None):
     iden = r.json()['jquery'][-1][-1][0]
     proxy_str = proxy if proxy else 'none'
 
-    requests.get('http://www.reddit.com/captcha/' + iden[0] + '.png', proxies=proxies)
+    requests.get('http://www.reddit.com/captcha/' + iden + '.png', proxies=proxies, stream=True)
     return [iden, proxy_str]
 
 if __name__ == "__main__":

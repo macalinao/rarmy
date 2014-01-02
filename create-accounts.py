@@ -39,12 +39,12 @@ def main():
         res = gen_acct(ng.generate(), c)
 
         if 'errors' in res:
-            print ', '.join(e[0] for e in res['errors'])
+            print 'Error: ' + ', '.join(e[0] for e in res['errors'])
             continue
 
         acct = res['acct']
         print 'Account created: ' + str(acct)
-        accts.push(acct)
+        accts.append(acct)
 
         if len(accts) > args.amount:
             break
@@ -85,9 +85,12 @@ def gen_acct(user, captcha):
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
+    proxies = {'http': proxy} if not proxy is 'none' else {}
+
+    requests.get('http://www.reddit.com/captcha/' + iden + '.png')
+
     r = requests.post('https://ssl.reddit.com/api/register/' + acct['user'],
-        data=urlencode(payload), headers=headers, proxies=({'http': proxy} if not proxy is 'none' else {}))
-    print r.text
+        data=urlencode(payload), headers=headers, proxies=proxies)
 
     rdata = r.json()
     if 'captcha' in rdata['json']:
