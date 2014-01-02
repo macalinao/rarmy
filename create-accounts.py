@@ -12,6 +12,8 @@ import string
 import requests
 from lib.utils import namegen
 import json
+from time import sleep
+import os
 
 def main():
     """
@@ -23,7 +25,7 @@ def main():
         help='The amount of accounts desired.')
     parser.add_argument('--tor', default=True, type=bool,
         help='Enable this flag to use Tor. You can only generate one account every 10 minutes if this is not enabled.')
-    parser.add_argument('--interval', default=610, type=str,
+    parser.add_argument('--interval', default=610, type=float,
         help='The interval in which accounts are created in seconds.')
 
     # Typical users should leave these alone
@@ -107,6 +109,9 @@ def main():
             accts.append(acct)
             break
 
+        if captchas:
+            sleep(args.interval)
+
     output = args.output
     d = os.path.dirname(output)
     if not os.path.exists(d):
@@ -114,8 +119,8 @@ def main():
         os.makedirs(d)
 
     with open(output, 'w+') as outfile:
-        json.dump(accts, outfile)
-    print 'Done! Generated accounts saved to file "' + args.output + '".'
+        json.dump(accts, outfile, indent=4)
+    print 'Done! ' + str(len(accts)) + ' generated accounts saved to file "' + args.output + '".'
 
 def parse_newline_file(file):
     """
