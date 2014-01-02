@@ -15,8 +15,7 @@ class Namegen(object):
         """
         Generates the account name.
         """
-        invalid = True
-        while invalid:
+        while True:
             user = random.choice(self.adjectives).title() + random.choice(self.nouns).title()
-            invalid = len(user) > self.limit
+            if len(user) <= self.limit: break
         return user

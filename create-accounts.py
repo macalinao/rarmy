@@ -11,6 +11,7 @@ import random
 import string
 import requests
 from lib.utils import namegen
+import json
 
 def main():
     """
@@ -38,6 +39,14 @@ def main():
     args = parser.parse_args()
 
     try:
+        captchas = parse_newline_file(args.captchas)
+    except IOError:
+        print 'Captchas file "' + args.captchas + '" does not exist!'
+        return
+
+    captchas = [ c.split('=') for c in captchas ]
+
+    try:
         adjectives = parse_newline_file(args.adjectives)
     except IOError:
         print 'Adjectives file "' + args.adjectives + '" does not exist!'
@@ -53,34 +62,60 @@ def main():
 
     accts = []
     for x in xrange(args.amount):
-        acct = {}
+        if not captchas:
+            print 'No more CAPTCHAs left!'
+            break
 
-        acct['user'] = ng.generate()
+        while True:
+            if not captchas:
+                print 'No more CAPTCHAs left!'
+                break
 
-        charset = string.ascii_lowercase + string.ascii_uppercase + string.digits
-        acct['pass'] = ''.join(random.choice(charset) for i in xrange(10))
+            acct = {}
 
-        # Generate the request
-        payload = {
-            'op': 'reg',
-            'user': acct['user'],
-            'email': '',
-            'passwd': acct['pass'],
-            'passwd2': acct['pass'],
-            'iden': '...',
-            'captcha': '...',
-            'rem': 'true',
-            'api_type': 'json'
-        }
+            acct['user'] = ng.generate()
 
-        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            charset = string.ascii_lowercase + string.ascii_uppercase + string.digits
+            acct['pass'] = ''.join(random.choice(charset) for i in xrange(10))
 
-        r = requests.post('https://ssl.reddit.com/api/register/' + acct['user'],
-            data=urlencode(payload), headers=headers)
+            captcha = captchas.pop()
 
-        if 'captcha' in r.text:
-            print 'error'
-        print 'Account created: ' + str(acct)
+            # Generate the request
+            payload = {
+                'op': 'reg',
+                'user': acct['user'],
+                'email': '',
+                'passwd': acct['pass'],
+                'passwd2': acct['pass'],
+                'iden': captcha[0],
+                'captcha': captcha[1],
+                'rem': 'true',
+                'api_type': 'json'
+            }
+
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+
+            r = requests.post('https://ssl.reddit.com/api/register/' + acct['user'],
+                data=urlencode(payload), headers=headers)
+
+            json = r.json()
+            if 'captcha' in json['json']:
+                print 'Error in creating user ' + acct['user'] + ': ' + str(', '.join(e[0] for e in json['json']['errors']))
+                continue
+
+            print 'Account created: ' + str(acct)
+            accts.append(acct)
+            break
+
+    output = args.output
+    d = os.path.dirname(output)
+    if not os.path.exists(d):
+        print 'Directory "' + d + '" not found. Creating.'
+        os.makedirs(d)
+
+    with open(output, 'w+') as outfile:
+        json.dump(accts, outfile)
+    print 'Done! Generated accounts saved to file "' + args.output + '".'
 
 def parse_newline_file(file):
     """
