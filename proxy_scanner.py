@@ -1,4 +1,4 @@
-from lib import proxies
+from rarmy.data import proxies
 import signal
 import sys
 import json
@@ -28,8 +28,6 @@ def main():
     args = parser.parse_args()
     output = args.output
 
-    pm = proxies.ProxyManager()
-
     threads = args.threads
     q = Queue(threads * 3)
 
@@ -40,7 +38,7 @@ def main():
         t.start()
 
     print 'Queueing proxies.'
-    for proxy in pm.proxies:
+    for proxy in proxies.proxies:
         q.put(proxy)
     q.join()
 

@@ -10,8 +10,7 @@ from argparse import ArgumentParser
 import random
 import string
 import requests
-from lib.utils import namegen
-from lib import dbs, proxies
+from rarmy.data import captchas, ng, proxies
 import json
 from time import sleep
 import os
@@ -31,14 +30,10 @@ def main():
 
     args = parser.parse_args()
 
-    captchas = dbs.load_captchas()
-    ng = namegen.Namegen()
-    pm = proxies.ProxyManager(args.interval)
-
     accts = []
     for c in captchas:
         while True:
-            proxy = pm.random_proxy()
+            proxy = proxies.random_proxy()
             res = gen_acct(ng.generate(), c, proxy)
             acct = res['acct']
 

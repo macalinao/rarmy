@@ -10,7 +10,6 @@ import requests
 from argparse import ArgumentParser
 from urllib import urlencode
 from time import sleep
-from lib import dbs
 
 def main():
     """
