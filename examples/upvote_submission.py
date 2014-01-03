@@ -1,8 +1,9 @@
 from rarmy import Army
 
 url = raw_input('Enter a Reddit post to mass-upvote: ')
+amt = raw_input('Enter the amount of upvotes desired: ')
 
-a = Army(size=5)
+a = Army(size=int(amt))
 a.upvote_link(url)
 
-print 'Check the post; it should have +5 upvotes.'
+print 'Check the post; it should have +' + amt + ' upvotes.'

@@ -15,6 +15,8 @@ class Army(object):
         if accts_len < size:
             print 'Not enough accounts for an army of size ' + str(size) + '! Size will be decreased to ' + str(accts_len) + '.'
             size = accts_len
+        elif accts_len > size:
+            accts = random.sample(accts, size)
 
         self.soldiers = []
         for x in xrange(size):
@@ -29,9 +31,13 @@ class Army(object):
 
     def upvote_link(self, id, interval=60):
         for s in self.soldiers:
-            s.vote('t3_' + id)
-            print 'UPVOTE ' + s.acct['user'] + ' ' + id
-            sleep(interval)
+            while True:
+                if s.vote('t3_' + id):
+                    print 'UPVOTE ' + s.acct['user'] + ' ' + id
+                    sleep(interval)
+                    break
+
+                print 'ERR_UPVOTE_RATELIMIT ' + s.acct['user'] + ' ' + id
 
     def upvote_comment(self, id):
         for s in self.soldiers:
@@ -45,7 +51,7 @@ class Soldier(object):
         self.acct = acct
         self.useragent = random.choice(data.useragents)
         self.modhash = None # The modhash. If logged in this will be set.
-        self.proxy = data.proxies.random_proxy()
+        self.get_new_proxy()
         self.client = requests.session()
 
     def params(self):
@@ -71,7 +77,7 @@ class Soldier(object):
             try:
                 return self.client.get(REDDIT_API_BASE + path, **params)
             except:
-                self.proxy = data.proxies.random_proxy()
+                self.get_new_proxy()
                 print 'ERR_PROXY_GET ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
                 params['proxies'] = { 'http': 'http://' + self.proxy }
                 sleep(2) # Avoid rate limit
@@ -86,10 +92,16 @@ class Soldier(object):
             try:
                 return self.client.post(REDDIT_API_BASE + path, data=urlencode(payload), timeout=3, **params)
             except:
-                self.proxy = data.proxies.random_proxy()
+                self.get_new_proxy()
                 print 'ERR_PROXY_POST ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
                 params['proxies'] = { 'http': 'http://' + self.proxy }
                 sleep(2) # Avoid rate limit
+
+    def get_new_proxy(self):
+        """
+        Gets a new proxy for this soldier.
+        """
+        self.proxy = data.proxies.random_proxy()
 
     def login(self):
         """
@@ -159,4 +171,4 @@ class Soldier(object):
         }
 
         r = self.post('vote', payload)
-        return r.text is '{}'
+        return not 'RATELIMIT' in r.text
