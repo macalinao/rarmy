@@ -52,7 +52,7 @@ def check_proxies():
     """
     while True:
         proxy = q.get()
-        res = test_proxy('https://' + proxy)
+        res = test_proxy('http://' + proxy)
         if res:
             pl.append(proxy)
             print 'GOOD ' + proxy
@@ -62,8 +62,14 @@ def test_proxy(proxy):
     Tests a proxy.
     """
     try:
-        r = requests.get('https://www.google.com/', proxies={'https': proxy}, timeout=3)
+        r = requests.get('http://www.reddit.com/', proxies={'http': proxy}, timeout=3)
     except Exception, e:
+        return False
+
+    if not r.status_code < 400:
+        return False
+
+    if not 'Submit a new link' in r.text:
         return False
 
     return r.text
