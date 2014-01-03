@@ -33,6 +33,12 @@ def load_nouns():
     """
     return try_parse_newline_file('txt/nouns.txt')
 
+def load_useragents():
+    """
+    Loads useragents.
+    """
+    return try_parse_newline_file('txt/useragents.txt')
+
 def load_accts():
     """
     Loads accts.
