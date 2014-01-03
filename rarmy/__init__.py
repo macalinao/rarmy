@@ -9,6 +9,9 @@ from rarmy import data
 REDDIT_API_BASE = 'http://www.reddit.com/api/'
 
 class Army(object):
+    """
+    Represents a set of soldiers, which are logged-in Reddit accounts.
+    """
     def __init__(self, size=50):
         accts = data.accts
         accts_len = len(accts)
@@ -28,6 +31,12 @@ class Army(object):
 
             self.soldiers.append(s)
         print '== ARMY INITIALIZED WITH ' + str(len(self.soldiers)) + ' SOLDIERS =='
+
+    def random_soldier(self):
+        """
+        Retrieves a random soldier.
+        """
+        return random.choice(self.soldiers)
 
     def upvote_link(self, id, interval=60):
         for s in self.soldiers:
