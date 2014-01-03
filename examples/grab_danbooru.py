@@ -1,5 +1,6 @@
 from lib import army, grab
 
-post = grab.danbooru('http://danbooru.donmai.us/posts/1583318')
+url = raw_input('Enter a Danbooru url: ')
+post = grab.danbooru(url)
 
 print post
