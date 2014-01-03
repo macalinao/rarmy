@@ -38,19 +38,23 @@ class Army(object):
         """
         return random.choice(self.soldiers)
 
-    def upvote_link(self, id, interval=60):
+    def vote(self, id, type=3, dir=1, interval=60):
+        """
+        Votes on the given post.
+        """
+        if not type in [1, 2, 3]:
+            print 'Unexpected error: Type must be 1, 2, or 3'
+            raise
+
         for s in self.soldiers:
             while True:
-                if s.vote('t3_' + id):
-                    print 'UPVOTE ' + s.acct['user'] + ' ' + id
+                if s.vote('t' + str(type) + '_' + id):
+                    print 'VOTE ' + s.acct['user'] + ' ' + id + ' ' + str(dir)
                     sleep(interval)
                     break
 
-                print 'ERR_UPVOTE_RATELIMIT ' + s.acct['user'] + ' ' + id
-
-    def upvote_comment(self, id):
-        for s in self.soldiers:
-            s.get_submission(url).comments[0].upvote()
+                print 'ERR_VOTE_RATELIMIT ' + s.acct['user'] + ' ' + id + ' ' + str(dir)
+                s.get_new_proxy()
 
 class Soldier(object):
     """
