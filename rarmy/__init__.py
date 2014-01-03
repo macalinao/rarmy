@@ -185,8 +185,10 @@ class Soldier(object):
         }
 
         r = self.post('comment', payload)
-        print r.text
-        return r.text
+        try:
+            return r.json()['json']['data']
+        except:
+            return False
 
     def vote(self, id, dir=1):
         """
