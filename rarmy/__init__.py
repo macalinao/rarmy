@@ -67,7 +67,14 @@ class Soldier(object):
         Sends a GET request to Reddit.
         """
         params = self.params()
-        return self.client.get(REDDIT_API_BASE + path, **params)
+        while True:
+            try:
+                return self.client.get(REDDIT_API_BASE + path, **params)
+            except:
+                self.proxy = data.proxies.random_proxy()
+                print 'ERR_PROXY_GET ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
+                params['proxies'] = { 'http': 'http://' + self.proxy }
+                sleep(2) # Avoid rate limit
 
     def post(self, path, payload={}, **kwargs):
         """
@@ -80,8 +87,9 @@ class Soldier(object):
                 return self.client.post(REDDIT_API_BASE + path, data=urlencode(payload), timeout=3, **params)
             except:
                 self.proxy = data.proxies.random_proxy()
-                print 'ERR_POST ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
+                print 'ERR_PROXY_POST ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
                 params['proxies'] = { 'http': 'http://' + self.proxy }
+                sleep(2) # Avoid rate limit
 
     def login(self):
         """
