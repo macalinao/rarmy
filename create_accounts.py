@@ -38,7 +38,7 @@ def main():
     accts = []
     for c in captchas:
         while True:
-            proxy = pm.next_proxy()
+            proxy = pm.random_proxy()
             res = gen_acct(ng.generate(), c, proxy)
             acct = res['acct']
 
@@ -100,13 +100,18 @@ def gen_acct(user, captcha, proxy):
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-    proxies = {'https': proxy} if not proxy is 'none' else {}
+    proxies = {'http': 'http://' + proxy}
 
     try:
-        r = requests.post('https://ssl.reddit.com/api/register/' + acct['user'],
+        r = requests.post('http://www.reddit.com/api/register',
             data=urlencode(payload), headers=headers, proxies=proxies, timeout=3)
-    except requests.exceptions.ProxyError:
+        print r.status_code
+    except requests.exceptions.ProxyError, e:
+        print e
         ret['errors'] = ['PROXY_ERROR']
+        return ret
+    except requests.exceptions.Timeout:
+        ret['errors'] = ['TIMEOUT']
         return ret
 
     try:
