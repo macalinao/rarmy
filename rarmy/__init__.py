@@ -16,22 +16,24 @@ class Army(object):
             print 'Not enough accounts for an army of size ' + str(size) + '! Size will be decreased to ' + str(accts_len) + '.'
             size = accts_len
 
-        pm = data.proxies
-        useragents = data.useragents
-
         self.soldiers = []
         for x in xrange(size):
-            self.soldiers.append(create_soldier(accts[x], pm.random_proxy()))
+            s = Soldier(accts[x])
+            while True:
+                if s.login():
+                    print 'LOGIN ' + s.acct['user'] + ' via ' + s.proxy
+                    break
+
+            self.soldiers.append(s)
         print '== ARMY INITIALIZED WITH ' + str(len(self.soldiers)) + ' SOLDIERS =='
 
-    def upvote_submission(self, url):
+    def upvote_link(self, id, interval=60):
         for s in self.soldiers:
-            sub = s.get_submission(url)
-            sub.upvote()
-            print 'UPVOTE ' + s.user.name + ' ' + sub.title
-            sleep(60)
+            s.vote('t3_' + id)
+            print 'UPVOTE ' + s.acct['user'] + ' ' + id
+            sleep(interval)
 
-    def upvote_comment(self, url):
+    def upvote_comment(self, id):
         for s in self.soldiers:
             s.get_submission(url).comments[0].upvote()
 
@@ -39,12 +41,11 @@ class Soldier(object):
     """
     Represents an account.
     """
-    def __init__(self, acct, useragent='MSIE (MSIE 6.0; X11; Linux; i686) Opera 7.23'):
+    def __init__(self, acct):
         self.acct = acct
-        self.useragent = useragent
+        self.useragent = random.choice(data.useragents)
         self.modhash = None # The modhash. If logged in this will be set.
-        self.proxy = None
-
+        self.proxy = data.proxies.random_proxy()
         self.client = requests.session()
 
     def params(self):
@@ -74,9 +75,15 @@ class Soldier(object):
         """
         params = self.params()
         params['headers']['Content-Type'] = 'application/x-www-form-urlencoded'
-        return self.client.post(REDDIT_API_BASE + path, data=urlencode(payload), **params)
+        while True:
+            try:
+                return self.client.post(REDDIT_API_BASE + path, data=urlencode(payload), timeout=3, **params)
+            except:
+                self.proxy = data.proxies.random_proxy()
+                print 'ERR_POST ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
+                params['proxies'] = { 'http': 'http://' + self.proxy }
 
-    def login(self, proxy=None):
+    def login(self):
         """
         Logs in the account. Nothing else works unless this has already been called successfully.
         The given proxy is set for this soldier if the login was successful via that proxy.
@@ -90,14 +97,13 @@ class Soldier(object):
             'user': self.acct['user']
         }
 
-        self.proxy = proxy
-        r = self.post('login', payload)
-        try:
-            print r.text
-            self.modhash = r.json()['json']['data']['modhash']
-        except:
-            self.proxy = None
-            return False
+        r = None
+        while r is None:
+            r = self.post('login', payload)
+            try:        
+                self.modhash = r.json()['json']['data']['modhash']
+            except:
+                r = None
 
         return self.modhash
 
@@ -135,6 +141,9 @@ class Soldier(object):
             return False
 
     def vote(self, id, dir=1):
+        """
+        Sends a vote.
+        """
         payload = {
             'dir': dir,
             'id': id,
@@ -142,5 +151,4 @@ class Soldier(object):
         }
 
         r = self.post('vote', payload)
-        print r.text
-
+        return r.text is '{}'
