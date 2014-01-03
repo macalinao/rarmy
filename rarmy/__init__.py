@@ -10,7 +10,7 @@ REDDIT_API_BASE = 'http://www.reddit.com/api/'
 
 class Army(object):
     def __init__(self, size=50):
-        accts = dbs.load_accts()
+        accts = data.accts
         accts_len = len(accts)
         if accts_len < size:
             print 'Not enough accounts for an army of size ' + str(size) + '! Size will be decreased to ' + str(accts_len) + '.'
