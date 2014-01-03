@@ -1,3 +1,5 @@
+import json
+
 def parse_newline_file(file):
     """
     Parses a newline-delimited file, given the file's name, returning
@@ -30,6 +32,17 @@ def load_nouns():
     Loads nouns.
     """
     return try_parse_newline_file('txt/nouns.txt')
+
+def load_accts():
+    """
+    Loads accts.
+    """
+    try:
+        with open('config/accounts.json', 'r') as f:
+            return json.load(f)
+    except IOError:
+        print 'Accounts file could not be loaded!'
+        return []
 
 def load_captchas():
     """

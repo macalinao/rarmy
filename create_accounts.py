@@ -104,9 +104,8 @@ def gen_acct(user, captcha, proxy):
 
     try:
         r = requests.post('https://ssl.reddit.com/api/register/' + acct['user'],
-            data=urlencode(payload), headers=headers, proxies=proxies)
+            data=urlencode(payload), headers=headers, proxies=proxies, timeout=3)
     except requests.exceptions.ProxyError:
-        print 'Error connecting to proxy "' + proxy + '"; skipping.'
         ret['errors'] = ['PROXY_ERROR']
         return ret
 

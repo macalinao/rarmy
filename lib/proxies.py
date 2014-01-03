@@ -1,5 +1,6 @@
 from lib import dbs
 import time
+import random
 
 class ProxyManager(object):
     """
@@ -12,13 +13,21 @@ class ProxyManager(object):
         @param cooldown The time until a proxy can be used again.
         """
         self.cooldown = cooldown
+        print 'Loading proxies...'
         if proxies is None:
             self.proxies = dbs.load_proxies()
         else:
             self.proxies = proxies
+        print 'Proxies loaded.'
 
         self.next = 0
         self.proxy_times = {}
+
+    def random_proxy(self):
+        """
+        Gets a random proxy. This will only work if you have a huge proxy list.
+        """
+        return random.choice(self.proxies)
 
     def next_proxy(self):
         """
