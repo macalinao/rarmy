@@ -33,7 +33,7 @@ def danbooru(url):
     link = r.json()['data']['link']
 
     return {
-        'reddit_title': reddit_title,
-        'reddit_comment': reddit_comment,
+        'title': reddit_title,
+        'comment': reddit_comment,
         'link': link
     }
