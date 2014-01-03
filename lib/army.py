@@ -33,16 +33,6 @@ class Army(object):
         for s in self.soldiers:
             s.get_submission(url).comments[0].upvote()
 
-def create_soldier(acct, proxy):
-    """
-    Creates a soldier.
-    """
-    s = praw.Reddit('reddit-army 1.0 by GrievingSpain')
-    s.config.http_proxy = 'http://' + '1.2.3.4'
-    s.login(acct['user'], acct['pass'])
-    print 'LOGIN ' + acct['user'] + ' via ' + proxy
-    return s
-
 class Soldier(object):
     """
     Represents an account.
@@ -101,6 +91,7 @@ class Soldier(object):
         self.proxy = proxy
         r = self.post('login', payload)
         try:
+            print r.text
             self.modhash = r.json()['json']['data']['modhash']
         except:
             self.proxy = None
@@ -132,9 +123,21 @@ class Soldier(object):
             'text': text,
             'then': 'comments',
             'title': title,
-            'uh': self.modhash,
             'url': url
         }
 
         r = self.post('submit', payload)
+        try:
+            return r.json()['json']['data']['name']
+        except: # No response
+            return False
+
+    def vote(self, id, dir=1):
+        payload = {
+            'dir': dir,
+            'id': id,
+            'uh': self.modhash
+        }
+
+        r = self.post('vote', payload)
         print r.text

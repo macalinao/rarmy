@@ -1,5 +1,5 @@
 from lib import army
 
 s = army.Soldier({ 'user': 'SelfishArithmetic', 'pass': '--censored from git--' })
-s.login('190.37.254.49:8080')
-s.submit('Ikazuchi [Kantai Collection]', 'awwnime', ['Y6OgStqiFwq5M8ai7vNTxipyx3HSv3zN', 'LKLQPK'], url='http://i.imgur.com/w781Jmk.jpg')
+s.login('46.249.66.50:8080')
+s.vote('t3_1ubfuy')
