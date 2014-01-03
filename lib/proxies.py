@@ -34,7 +34,7 @@ class ProxyManager(object):
             self.proxy_times[proxy] = time.time()
             self.next += 1
             if self.next == len(self.proxies): self.next = 0
-            return proxy
+            return 'https://' + proxy
 
         # Proxy unavailable, return the waiting time.
         return -diff
