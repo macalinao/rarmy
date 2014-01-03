@@ -20,7 +20,7 @@ def danbooru(url):
     reddit_title = title + ' [' + source + ']'
     reddit_comment = '[Source - Danbooru](' + url + ')'
 
-    img = 'http://danbooru.donmai.us/' + soup.find(alt='Sample')['src']
+    img = 'http://danbooru.donmai.us/' + soup.find(id='image')['src']
 
     headers = {'Authorization': 'Client-ID ' + config['imgur']['client_id']}
     payload = {

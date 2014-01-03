@@ -169,9 +169,24 @@ class Soldier(object):
 
         r = self.post('submit', payload)
         try:
-            return r.json()['json']['data']['name']
+            return r.json()['json']['data']
         except: # No response
             return False
+
+    def comment(self, parent, text):
+        """
+        Comments on a given post.
+        """
+
+        payload = {
+            'api_type': 'json',
+            'text': text,
+            'thing_id': parent
+        }
+
+        r = self.post('comment', payload)
+        print r.text
+        return r.text
 
     def vote(self, id, dir=1):
         """
