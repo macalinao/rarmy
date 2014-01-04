@@ -31,7 +31,7 @@ def main():
     args = parser.parse_args()
 
     accts = []
-    cs = captchas.next(amount)
+    cs = captchas.next(args.amount)
     for c in cs:
         while True:
             proxy = proxies.random_proxy()
@@ -98,7 +98,6 @@ def gen_acct(user, captcha, proxy):
     try:
         r = requests.post('http://www.reddit.com/api/register',
             data=urlencode(payload), headers=headers, proxies=proxies, timeout=3)
-        print r.status_code
     except requests.exceptions.ProxyError, e:
         print e
         ret['errors'] = ['PROXY_ERROR']

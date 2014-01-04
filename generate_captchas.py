@@ -10,6 +10,7 @@ import requests
 from argparse import ArgumentParser
 from urllib import urlencode
 from time import sleep
+from rarmy.data import captchas
 
 def main():
     """
@@ -20,18 +21,13 @@ def main():
         be evaluated manually. Future releases may automate captcha recognition.')
     parser.add_argument('--amount', default=1, type=int,
         help='The amount of CAPTCHAs desired.')
-    parser.add_argument('--output', default='output/idens.txt', type=str,
-        help='The file in which to store the found idens in.')
-    parser.add_argument('--html', default='output/idens.html', type=str,
-        help='The file to create an HTML file at.')
 
     args = parser.parse_args()
 
     idens = []
     print 'Generating ' + str(args.amount) + ' CAPTCHA idens per proxy.'
 
-    output = args.output
-    d = os.path.dirname(output)
+    d = 'output/'
     if not os.path.exists(d):
         print 'Directory "' + d + '" not found. Creating.'
         os.makedirs(d)
@@ -58,15 +54,11 @@ def main():
         print 'Generated iden ' + iden
         idens.append(iden)
 
-    with open(output, 'w+') as outfile:
-        outfile.write('\n'.join(idens))
-    print 'Idens successfully written to ' + output + '.'
-
     content = ''
     for i in idens:
-        content += '<img src="idens/' + i.split('=')[0] + '.png" />'
+        content += i[0:6] + '&nbsp;<img alt="' + i + '" title="' + i + '" src="idens/' + i + '.png" />'
 
-    html = args.html
+    html = 'output/idens.html'
     d = os.path.dirname(html)
     if not os.path.exists(d):
         print 'Directory "' + d + '" not found. Creating.'
@@ -74,7 +66,16 @@ def main():
 
     with open(html, 'w+') as outfile:
         outfile.write(content)
-    print 'HTML file successfully written to ' + html + '.'
+    print 'Open the HTML file ' + html + ' and input the CAPTCHA solutions below.'
+    os.startfile(os.path.abspath(html))
+
+    cs = []
+    for iden in idens:
+        sol = raw_input(iden + ': ').upper()
+        cs.append([iden, sol])
+
+    captchas.add(cs)
+    print 'Saved CAPTCHAs to the CAPTCHA manager.'
 
 def gen_iden():
     """

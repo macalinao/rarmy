@@ -71,7 +71,7 @@ class CaptchaManager(object):
     Manages our CAPTCHAs.txt
     """
     def __init__(self):
-        lines = try_parse_newline_file('output/captchas.txt')
+        lines = try_parse_newline_file('config/captchas.txt')
         self.captchas = [ c.split('=') for c in lines ]
 
     def next(self, amt=1):
@@ -89,11 +89,19 @@ class CaptchaManager(object):
         self.save()
         return ret if len(ret) > 0 else None
 
+    def add(self, captchas):
+        """
+        Adds CAPTCHAs to the CAPTCHA manager. It will save it to our
+        captchas.txt file.
+        """
+        self.captchas += captchas
+        self.save()
+
     def save(self):
         """
         Saves our captchas.
         """
-        with open('output/captchas.txt', 'w') as f:
+        with open('config/captchas.txt', 'w') as f:
             f.write('\n'.join(c[0] + '=' + c[1] for c in self.captchas))
 
 def _load_accts():
