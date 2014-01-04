@@ -31,7 +31,8 @@ def main():
     args = parser.parse_args()
 
     accts = []
-    for c in captchas:
+    cs = captchas.next(amount)
+    for c in cs:
         while True:
             proxy = proxies.random_proxy()
             res = gen_acct(ng.generate(), c, proxy)
@@ -54,9 +55,6 @@ def main():
 
             print 'Account created: ' + str(acct)
             accts.append(acct)
-            break
-
-        if len(accts) == args.amount:
             break
 
     output = args.output

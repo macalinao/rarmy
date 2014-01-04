@@ -66,6 +66,36 @@ class ProxyManager(object):
         # Proxy unavailable, return the waiting time.
         return -diff
 
+class CaptchaManager(object):
+    """
+    Manages our CAPTCHAs.txt
+    """
+    def __init__(self):
+        lines = try_parse_newline_file('output/captchas.txt')
+        self.captchas = [ c.split('=') for c in lines ]
+
+    def next(self, amt=1):
+        """
+        Gets the next number of CAPTCHAs. If there aren't enough CAPTCHAs,
+        the maximum amount of captchas are returned.
+        """
+        ret = []
+        for x in xrange(amt):
+            if len(self.captchas) > 0:
+                ret.append(self.captchas.pop())
+            else:
+                break
+
+        self.save()
+        return ret if len(ret) > 0 else None
+
+    def save(self):
+        """
+        Saves our captchas.
+        """
+        with open('output/captchas.txt', 'w') as f:
+            f.write('\n'.join(c[0] + '=' + c[1] for c in self.captchas))
+
 def _load_accts():
     """
     Loads accts.
@@ -76,13 +106,6 @@ def _load_accts():
     except IOError:
         print 'Accounts file could not be loaded!'
         return []
-
-def _load_captchas():
-    """
-    Loads the captchas file.
-    """
-    lines = try_parse_newline_file('output/captchas.txt')
-    return [ c.split('=') for c in lines ]
 
 def try_parse_newline_file(file):
     """
@@ -104,6 +127,6 @@ def parse_newline_file(file):
 
 proxies = ProxyManager()
 ng = Namegen()
+captchas = CaptchaManager()
 useragents = try_parse_newline_file('txt/useragents.txt')
 accts = _load_accts()
-captchas = _load_captchas()

@@ -14,7 +14,7 @@ army = Army(votes) # Make an army
 
 s = army.random_soldier()
 print 'Posting on random soldier ' + s.acct['user']
-post = s.submit(img['title'], 'awwnime', captchas.pop(), url=img['link'])
+post = s.submit(img['title'], 'awwnime', captchas.next()[0], url=img['link'])
 print 'Post created! ' + post['id']
 
 print 'Posting comment showing source...'
