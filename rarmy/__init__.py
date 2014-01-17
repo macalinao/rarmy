@@ -119,7 +119,7 @@ class Soldier(object):
 
         self.get_new_proxy()
 
-    def params(self):
+    def params(self, args):
         """
         Gets the params passed in this soldier's requests.
         """
@@ -127,7 +127,12 @@ class Soldier(object):
         headers['User-Agent'] = self.useragent
         if self.modhash:
             headers['X-Modhash'] = self.modhash
-        proxies = { 'http': 'http://' + self.proxy } if self.proxy else {}
+
+        if 'proxy' in args and not args['proxy']:
+            proxies = None
+        else:
+            proxies = { 'http': 'http://' + self.proxy } if self.proxy else {}
+
         return {
             'headers': headers,
             'proxies': proxies
@@ -137,7 +142,7 @@ class Soldier(object):
         """
         Sends a GET request to Reddit.
         """
-        params = self.params()
+        params = self.params(kwargs)
         while True:
             try:
                 return self.session.get(REDDIT_API_BASE + path, **params)
@@ -151,8 +156,9 @@ class Soldier(object):
         """
         Sends a POST request to Reddit.
         """
-        params = self.params()
+        params = self.params(kwargs)
         params['headers']['Content-Type'] = 'application/x-www-form-urlencoded'
+
         while True:
             try:
                 return self.session.post(REDDIT_API_BASE + path, data=urlencode(payload), timeout=10, **params)
@@ -184,7 +190,7 @@ class Soldier(object):
 
         r = None
         while r is None:
-            r = self.post('login', payload)
+            r = self.post('login', payload, proxy=False)
             try:        
                 self.modhash = r.json()['json']['data']['modhash']
             except:

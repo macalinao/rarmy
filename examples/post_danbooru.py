@@ -5,12 +5,12 @@ from rarmy import Army
 url = raw_input('Enter a Danbooru url: ')
 votes = int(raw_input('Enter number of desired upvotes: '))
 
+print 'Creating army of ' + str(votes) + '...'
+army = Army(votes) # Make an army
+
 print 'Uploading image from Danbooru...'
 img = danbooru(url)
 print 'Image uploaded at ' + img['link']
-
-print 'Creating army of ' + str(votes) + '...'
-army = Army(votes) # Make an army
 
 s = army.random_soldier()
 print 'Posting on random soldier ' + s.acct['user']
