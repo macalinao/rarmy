@@ -4,6 +4,7 @@ from rarmy import Army
 
 url = raw_input('Enter a Danbooru url: ')
 votes = int(raw_input('Enter number of desired upvotes: '))
+title = raw_input('Enter a title (optional):')
 
 print 'Creating army of ' + str(votes) + '...'
 army = Army(votes) # Make an army
@@ -15,6 +16,7 @@ print 'Image uploaded at ' + img['link']
 s = army.random_soldier()
 print 'Posting on random soldier ' + s.acct['user']
 
+title = title if title else img['title']
 count = 0
 while True:
     if count > 5:
@@ -22,7 +24,7 @@ while True:
         print 'Could not post, changing to soldier ' + s.acct['user']
         count = 0
 
-    post = s.submit(img['title'], 'awwnime', captchas.next()[0], url=img['link'])
+    post = s.submit(title, 'awwnime', captchas.next()[0], url=img['link'])
     if not post:
         print 'Error posting, retrying...'
         count += 1
