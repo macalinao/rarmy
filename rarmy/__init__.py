@@ -14,6 +14,10 @@ class Army(object):
     Represents a set of soldiers, which are logged-in Reddit accounts.
     """
     def __init__(self, size=5):
+        """
+        Initializes an army of a given size. Uses army.json and accounts.json to
+        find the account info.
+        """
         self.soldiers = []
 
         # Load cached soldiers
@@ -31,7 +35,8 @@ class Army(object):
             pass # IDGAF
 
         # Apparently we don't have enough accts. Login more!
-        accts = data.accts
+        users = [ a.acct['user'] for a in self.soldiers ]
+        accts = [ a for a in data.accts if a['user'] not in users ]
         accts_len = len(accts)
 
         # Not enough accts error
@@ -51,6 +56,9 @@ class Army(object):
                     break
 
             self.soldiers += [s]
+
+        # Save the army that took so long to make
+        self.save()
 
     def save(self):
         """
