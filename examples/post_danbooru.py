@@ -14,12 +14,25 @@ army = Army(votes) # Make an army
 
 s = army.random_soldier()
 print 'Posting on random soldier ' + s.acct['user']
-post = s.submit(img['title'], 'awwnime', captchas.next()[0], url=img['link'])
+
+count = 0
+while True:
+    if count > 5:
+        s = army.random_soldier()
+        print 'Could not post, changing to soldier ' + s.acct['user']
+        count = 0
+
+    post = s.submit(img['title'], 'awwnime', captchas.next()[0], url=img['link'])
+    if not post:
+        print 'Error posting, retrying...'
+        count += 1
+    else:
+        break
 print 'Post created! ' + post['id']
 
 print 'Posting comment showing source...'
 comment = s.comment(post['name'], img['comment'])
-print 'Comment posted! ' + comment['things'][0]['id']
+print 'Comment posted! ' + comment['id']
 
 print 'Mass upvoting...'
 army.vote(post['id'])

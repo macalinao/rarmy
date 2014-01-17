@@ -5,6 +5,7 @@ import random
 from urllib import urlencode
 import requests
 from rarmy import data
+import json
 
 REDDIT_API_BASE = 'http://www.reddit.com/api/'
 
@@ -12,16 +13,36 @@ class Army(object):
     """
     Represents a set of soldiers, which are logged-in Reddit accounts.
     """
-    def __init__(self, size=50):
+    def __init__(self, size=5):
+        self.soldiers = []
+
+        # Load cached soldiers
+        try:
+            with open('config/army.json', 'r') as f:
+                army = json.load(f)
+
+            # Load army from the cached one
+            for sdata in army:
+                self.soldiers += [Soldier(sdata['acct'], sdata['session'])]
+                # Check if we have enough accts
+                if len(self.soldiers) == size:
+                    return
+        except IOError:
+            pass # IDGAF
+
+        # Apparently we don't have enough accts. Login more!
         accts = data.accts
         accts_len = len(accts)
+
+        # Not enough accts error
         if accts_len < size:
             print 'Not enough accounts for an army of size ' + str(size) + '! Size will be decreased to ' + str(accts_len) + '.'
             size = accts_len
+        # Too many accts, pick randomly from the remaining ones
         elif accts_len > size:
             accts = random.sample(accts, size)
 
-        self.soldiers = []
+        # Log in the remaining accts
         for x in xrange(size):
             s = Soldier(accts[x])
             while True:
@@ -29,8 +50,20 @@ class Army(object):
                     print 'LOGIN ' + s.acct['user'] + ' via ' + s.proxy
                     break
 
-            self.soldiers.append(s)
-        print '== ARMY INITIALIZED WITH ' + str(len(self.soldiers)) + ' SOLDIERS =='
+            self.soldiers += [s]
+
+    def save(self):
+        """
+        Saves this army to a file.
+        """
+        with open('config/army.json', 'w') as f:
+            json.dump([ {
+                'acct': s.acct,
+                'session': {
+                    'modhash': s.modhash,
+                    'cookies': s.cookies()
+                }
+            } for s in self.soldiers ], f)
 
     def random_soldier(self):
         """
@@ -46,10 +79,12 @@ class Army(object):
             print 'Unexpected error: Type must be 1, 2, or 3'
             raise
 
-        for s in self.soldiers:
+        for i, s in enumerate(self.soldiers):
             while True:
                 if s.vote('t' + str(type) + '_' + id):
                     print 'VOTE ' + s.acct['user'] + ' ' + id + ' ' + str(dir)
+                    if i == len(self.soldiers) - 1:
+                        return
                     sleep(interval)
                     break
 
@@ -60,12 +95,21 @@ class Soldier(object):
     """
     Represents an account.
     """
-    def __init__(self, acct):
+    def __init__(self, acct, session=None):
         self.acct = acct
         self.useragent = random.choice(data.useragents)
-        self.modhash = None # The modhash. If logged in this will be set.
+
+        # Load our session
+        if session:
+            self.modhash = session['modhash']
+            cookies = requests.utils.cookiejar_from_dict(session['cookies'])
+            self.session = requests.Session()
+            self.session.cookies = cookies
+        else:
+            self.modhash = None
+            self.session = requests.session()
+
         self.get_new_proxy()
-        self.client = requests.session()
 
     def params(self):
         """
@@ -88,7 +132,7 @@ class Soldier(object):
         params = self.params()
         while True:
             try:
-                return self.client.get(REDDIT_API_BASE + path, **params)
+                return self.session.get(REDDIT_API_BASE + path, **params)
             except:
                 self.get_new_proxy()
                 print 'ERR_PROXY_GET ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
@@ -103,7 +147,7 @@ class Soldier(object):
         params['headers']['Content-Type'] = 'application/x-www-form-urlencoded'
         while True:
             try:
-                return self.client.post(REDDIT_API_BASE + path, data=urlencode(payload), timeout=3, **params)
+                return self.session.post(REDDIT_API_BASE + path, data=urlencode(payload), timeout=10, **params)
             except:
                 self.get_new_proxy()
                 print 'ERR_PROXY_POST ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
@@ -139,6 +183,12 @@ class Soldier(object):
                 r = None
 
         return self.modhash
+
+    def cookies(self):
+        """
+        Gets the dict representation of this soldier's cookies.
+        """
+        return requests.utils.dict_from_cookiejar(self.session.cookies)
 
     def submit(self, title, sr, captcha, **kwargs):
         """
@@ -186,7 +236,7 @@ class Soldier(object):
 
         r = self.post('comment', payload)
         try:
-            return r.json()['json']['data']
+            return r.json()['json']['data']['things'][0]['data']
         except:
             return False
 
