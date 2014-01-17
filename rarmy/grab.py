@@ -18,7 +18,7 @@ def danbooru(url):
     title = full_title[0:s1].strip().title()
     source = full_title[s1 + 1:s2].strip().title()
     reddit_title = title + ' [' + source + ']'
-    reddit_comment = '[Source - Danbooru](' + url + ')'
+    reddit_comment = '[Danbooru](' + url + ')'
 
     img = 'http://danbooru.donmai.us/' + soup.find(id='image')['src']
 
