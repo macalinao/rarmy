@@ -53,6 +53,7 @@ class Army(object):
             while True:
                 if s.login():
                     print 'LOGIN ' + s.acct['user'] + ' via ' + s.proxy
+                    sleep(2) # Avoid rate limit
                     break
 
             self.soldiers += [s]
