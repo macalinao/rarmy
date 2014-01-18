@@ -6,4 +6,4 @@ amt = raw_input('Enter the amount of upvotes desired: ')
 a = Army(int(amt))
 a.vote(name)
 
-print 'Check the post; it should have +' + amt + ' upvotes.'
+print 'Check the post; it should have +%d upvotes.' % amt

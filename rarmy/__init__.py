@@ -42,7 +42,8 @@ class Army(object):
 
         # Not enough accts error
         if accts_len < req:
-            print 'Not enough accounts for an army of size ' + str(size) + '! Size will be decreased to ' + str(len(self.soldiers) + accts_len) + '.'
+            new_len = len(self.soldiers) + accts_len
+            print 'Not enough accounts for an army of size %d! Size will be decreased to %d.' % (size, new_len)
             req = accts_len
         # Too many accts, pick randomly from the remaining ones
         elif accts_len > req:
@@ -53,7 +54,7 @@ class Army(object):
             s = Soldier(accts[x])
             while True:
                 if s.login():
-                    print 'LOGIN ' + s.acct['user'] + ' via ' + s.proxy
+                    print 'LOGIN %s via %s' % (s.acct['user'], s.proxy)
                     sleep(2) # Avoid rate limit
                     break
 
@@ -92,13 +93,13 @@ class Army(object):
         for i, s in enumerate(self.soldiers):
             while True:
                 if s.vote(name):
-                    print 'VOTE ' + s.acct['user'] + ' ' + name + ' ' + str(dir)
+                    print 'VOTE %s %s %d' % (s.acct['user'], name, dir)
                     if i == len(self.soldiers) - 1:
                         return
                     sleep(60)
                     break
 
-                print 'ERR_VOTE_RATELIMIT ' + s.acct['user'] + ' ' + id + ' ' + str(dir)
+                print 'ERR_VOTE_RATELIMIT %s %s %d' % (s.acct['user'], name, dir)
                 s.get_new_proxy()
 
 class Soldier(object):
@@ -150,7 +151,7 @@ class Soldier(object):
                 return self.session.get(REDDIT_API_BASE + path, **params)
             except:
                 self.get_new_proxy()
-                print 'ERR_PROXY_GET ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
+                print 'ERR_PROXY_GET %s Retrying with new proxy %s' % (self.acct['user'], self.proxy)
                 sleep(2) # Avoid rate limit
 
     def post(self, path, payload={}, **kwargs):
@@ -164,7 +165,7 @@ class Soldier(object):
                 return self.session.post(REDDIT_API_BASE + path, data=urlencode(payload), timeout=10, **params)
             except:
                 self.get_new_proxy()
-                print 'ERR_PROXY_POST ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
+                print 'ERR_PROXY_POST %s Retrying with new proxy %s' % (self.acct['user'], self.proxy)
                 sleep(2) # Avoid rate limit
 
     def get_new_proxy(self):
