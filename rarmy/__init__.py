@@ -144,30 +144,27 @@ class Soldier(object):
         """
         Sends a GET request to Reddit.
         """
-        params = self.params(kwargs)
         while True:
             try:
+                params = self.params(kwargs)
                 return self.session.get(REDDIT_API_BASE + path, **params)
             except:
                 self.get_new_proxy()
                 print 'ERR_PROXY_GET ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
-                params['proxies'] = { 'http': 'http://' + self.proxy }
                 sleep(2) # Avoid rate limit
 
     def post(self, path, payload={}, **kwargs):
         """
         Sends a POST request to Reddit.
         """
-        params = self.params(kwargs)
-        params['headers']['Content-Type'] = 'application/x-www-form-urlencoded'
-
         while True:
             try:
+                params = self.params(kwargs)
+                params['headers']['Content-Type'] = 'application/x-www-form-urlencoded'
                 return self.session.post(REDDIT_API_BASE + path, data=urlencode(payload), timeout=10, **params)
             except:
                 self.get_new_proxy()
                 print 'ERR_PROXY_POST ' + self.acct['user'] + ' Retrying with new proxy ' + self.proxy
-                params['proxies'] = { 'http': 'http://' + self.proxy }
                 sleep(2) # Avoid rate limit
 
     def get_new_proxy(self):
