@@ -174,6 +174,15 @@ class Soldier(object):
         """
         self.proxy = data.proxies.random_proxy()
 
+    def me(self):
+        """
+        Gets info about the user.
+        """
+        try:
+            return self.get('me.json').json()
+        except:
+            return None
+
     def login(self):
         """
         Logs in the account. Nothing else works unless this has already been called successfully.
@@ -206,7 +215,7 @@ class Soldier(object):
 
     def submit(self, title, sr, captcha, **kwargs):
         """
-        Submits something.
+        Submits a post.
         """
         if 'kind' in kwargs:
             kind = kwargs['kind']
