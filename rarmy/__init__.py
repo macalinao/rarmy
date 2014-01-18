@@ -81,7 +81,7 @@ class Army(object):
         """
         return random.choice(self.soldiers)
 
-    def vote(self, id, type=3, dir=1, interval=60):
+    def vote(self, name, dir=1, interval=60):
         """
         Votes on the given post.
         """
@@ -91,8 +91,8 @@ class Army(object):
 
         for i, s in enumerate(self.soldiers):
             while True:
-                if s.vote('t' + str(type) + '_' + id):
-                    print 'VOTE ' + s.acct['user'] + ' ' + id + ' ' + str(dir)
+                if s.vote(name):
+                    print 'VOTE ' + s.acct['user'] + ' ' + name + ' ' + str(dir)
                     if i == len(self.soldiers) - 1:
                         return
                     sleep(60)
@@ -240,7 +240,6 @@ class Soldier(object):
         """
         Comments on a given post.
         """
-
         payload = {
             'api_type': 'json',
             'text': text,

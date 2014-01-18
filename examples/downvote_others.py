@@ -7,4 +7,4 @@ posts = [ post['data'] for post in requests.get('http://www.reddit.com/r/awwnime
 for post in posts:
     if not post['author'] in users:
         print 'Downvoting %s.' % post['name']
-        army.vote(post['id'], 3, -1)
+        army.vote(post['name'], -1)
