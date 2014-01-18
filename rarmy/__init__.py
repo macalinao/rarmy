@@ -38,17 +38,18 @@ class Army(object):
         users = [ a.acct['user'] for a in self.soldiers ]
         accts = [ a for a in data.accts if a['user'] not in users ]
         accts_len = len(accts)
+        req = size - len(self.soldiers)
 
         # Not enough accts error
-        if accts_len < size:
-            print 'Not enough accounts for an army of size ' + str(size) + '! Size will be decreased to ' + str(accts_len) + '.'
-            size = accts_len
+        if accts_len < req:
+            print 'Not enough accounts for an army of size ' + str(size) + '! Size will be decreased to ' + str(len(self.soldiers) + accts_len) + '.'
+            req = accts_len
         # Too many accts, pick randomly from the remaining ones
-        elif accts_len > size:
-            accts = random.sample(accts, size)
+        elif accts_len > req:
+            accts = random.sample(accts, req)
 
         # Log in the remaining accts
-        for x in xrange(size):
+        for x in xrange(req):
             s = Soldier(accts[x])
             while True:
                 if s.login():
@@ -94,7 +95,7 @@ class Army(object):
                     print 'VOTE ' + s.acct['user'] + ' ' + id + ' ' + str(dir)
                     if i == len(self.soldiers) - 1:
                         return
-                    sleep(interval)
+                    sleep(60)
                     break
 
                 print 'ERR_VOTE_RATELIMIT ' + s.acct['user'] + ' ' + id + ' ' + str(dir)
